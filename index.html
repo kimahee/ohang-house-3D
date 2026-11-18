@@ -1,381 +1,588 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>오행의집 | 나에게 맞는 공간</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>오행의 집 GAME</title>
 <style>
-:root{--teal:#18a999;--ink:#253238;--muted:#7c898d;--line:#e8eeed;--bg:#f7f9f8}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Malgun Gothic",sans-serif}
-.app{max-width:480px;margin:auto;min-height:100vh;background:white;padding-bottom:85px}
-header{position:sticky;top:0;background:white;z-index:5;padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:21px;font-weight:800;letter-spacing:-1px}
-.logo span{color:var(--teal)}
-main{padding:20px}
-h1{font-size:25px;line-height:1.4;letter-spacing:-1px}
-h2{font-size:20px;letter-spacing:-.6px}
-p{line-height:1.65}
-.muted{color:var(--muted);font-size:13px}
-.hero{background:#e8f5f1;padding:24px;border-radius:20px;margin-bottom:22px}
-.hero .eyebrow{font-size:12px;color:#168b7c;font-weight:700}
-.hero h1{margin:10px 0}
-.card{border:1px solid var(--line);border-radius:17px;padding:17px;margin:14px 0;background:white}
-label{display:block;font-weight:700;font-size:14px;margin:16px 0 8px}
-input,select{width:100%;border:1px solid #dce5e2;border-radius:11px;padding:13px;font-size:15px;background:white;color:var(--ink)}
-button{cursor:pointer;font:inherit}
-.primary{width:100%;border:0;border-radius:12px;background:var(--teal);color:white;padding:15px;font-weight:700;margin-top:16px}
-.secondary{width:100%;border:1px solid #cdded9;border-radius:12px;background:white;padding:13px;color:#197e72;font-weight:700;margin-top:10px}
-.progress{height:6px;background:#e9f0ee;border-radius:20px;overflow:hidden;margin:12px 0}
-.progress div{height:100%;background:var(--teal);transition:width .3s}
-.step-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
-.time-grid,.chips{display:flex;gap:7px;flex-wrap:wrap}
-.chip{border:1px solid #dfe8e5;background:white;border-radius:30px;padding:9px 12px;font-size:13px}
-.chip.active{background:#e2f6f0;border-color:var(--teal);color:#087e70;font-weight:700}
-.time-grid button{flex:0 0 calc(33.33% - 5px)}
-.element-row{display:grid;grid-template-columns:38px 1fr 30px;align-items:center;gap:10px;margin:14px 0;font-size:14px}
-.bar{height:11px;background:#edf2f0;border-radius:20px;overflow:hidden}
-.bar div{height:100%;border-radius:20px}
-.result-box{background:#f0f8f5;border-radius:16px;padding:18px}
-.product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:16px}
-.product{min-width:0}
-.photo{position:relative;aspect-ratio:1;background:#edf1ee;border-radius:13px;overflow:hidden}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.heart{position:absolute;right:8px;top:8px;background:#ffffffed;border:0;border-radius:50%;width:34px;height:34px;font-size:19px}
-.heart.on{color:#e85673}
-.product-title{font-size:14px;font-weight:700;margin-top:8px;line-height:1.5}
-.product-tag{font-size:12px;color:var(--muted);margin-top:4px}
-.empty{text-align:center;color:var(--muted);padding:32px 10px}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);max-width:480px;width:100%;display:flex;background:white;border-top:1px solid var(--line);padding:10px 0 max(12px,env(safe-area-inset-bottom));z-index:6}
-nav button{flex:1;border:0;background:white;color:#778481;font-size:12px;padding:5px}
-nav button.active{color:var(--teal);font-weight:800}
-nav b{display:block;font-size:21px;margin-bottom:4px}
-.hidden{display:none!important}
-.notice{font-size:12px;line-height:1.6;color:#87918e;margin-top:20px}
-.saved-row{padding:12px 0;border-bottom:1px solid var(--line)}
+/* ===== 1. 공통 ===== */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:#2d2a3a;background:#20323a}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:11px 16px;min-height:44px;background:#2d2a3a;color:#fff;font-weight:700}
+button.ghost{background:#fff;color:#2d2a3a;box-shadow:inset 0 0 0 2px #2d2a3a}
+button:disabled{opacity:.4;cursor:default}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:radial-gradient(circle at 50% -10%,#fff6dc,#ecd9a8 65%,#d9c08a);overflow:hidden}
+.screen.on{display:flex}
+
+/* ===== 2. 시작 화면 ===== */
+#s-start{align-items:center;justify-content:center;text-align:center;gap:18px;padding:24px}
+.logo{width:132px;height:132px;border-radius:50%;background:#fff;display:grid;grid-template-columns:repeat(3,1fr);place-items:center;box-shadow:0 8px 0 #b89a57}
+.logo i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:900;font-size:15px}
+.title{font-size:30px;font-weight:900}
+.subtitle{font-size:14px;color:#6b6478}
+#btnStart{font-size:18px;padding:16px 36px;background:#c0392b}
+#visitText{font-size:12px;color:#6b6478;min-height:1.2em}
+
+/* ===== 3. 섬 선택 ===== */
+.head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.7)}
+.head h2{font-size:17px;flex:1}
+.head button{padding:8px 12px;min-height:38px;font-size:13px}
+#islandList{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
+.isl{background:#fff;border-radius:16px;padding:10px;text-align:center;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.12);border:3px solid transparent}
+.isl.on{border-color:#d9a441;transform:translateY(-2px)}
+.isl b{display:block;font-size:14px;margin-top:6px}
+.isl small{color:#6b6478;font-size:12px}
+.isl:last-child{grid-column:span 2}
+.mg{display:grid;gap:1px;width:100%}
+.mg i{display:block;aspect-ratio:1;border-radius:2px}
+.preview{margin:0 12px;background:#fff;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:center;flex:1;min-height:0;overflow:auto}
+.preview .big{width:140px;flex:0 0 140px}
+.preview h3{font-size:18px;margin-bottom:6px}
+.preview p{font-size:14px;line-height:1.5;color:#4b4658}
+.foot{padding:12px}
+.foot button{width:100%}
+
+/* ===== 4. 편집 화면 ===== */
+.seg{display:flex;background:#e7dcc2;border-radius:12px;padding:3px}
+.seg button{background:transparent;color:#2d2a3a;padding:7px 10px;min-height:34px;border-radius:9px;font-size:13px}
+.seg button.on{background:#2d2a3a;color:#fff}
+.stage{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:18px;perspective:900px}
+.board{position:relative;transition:transform .35s ease;transform-style:preserve-3d;border-radius:14px;box-shadow:0 6px 0 rgba(0,0,0,.15);flex:0 0 auto;
+  --land:#a9d98f;--blk:#3f7a4a;--water:#7fbde0;--path:#e6d0a0}
+.board.front{transform:rotateX(55deg)}
+.cell{position:absolute;border:1px solid rgba(0,0,0,.06)}
+.cell.land{background:var(--land)}
+.cell.blk{background:var(--blk)}
+.cell.water{background:var(--water)}
+.cell.path{background:var(--path)}
+.cell.void{background:transparent;border-color:transparent}
+.item{position:absolute;border-radius:8px;border:2px solid rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);cursor:pointer;z-index:2;box-sizing:border-box;text-align:center;line-height:1.1}
+.item.sel{outline:3px solid #d9a441;outline-offset:1px}
+.board.front .item{box-shadow:0 8px 0 rgba(0,0,0,.28)}
+.ghost{position:absolute;border-radius:8px;border:2px dashed;pointer-events:none;z-index:3;box-sizing:border-box}
+.ghost.ok{background:rgba(60,190,110,.45);border-color:#1f8a4c}
+.ghost.bad{background:rgba(220,60,60,.45);border-color:#a82727}
+.status{padding:8px 14px 0;font-size:13px}
+#msg{min-height:2.6em;line-height:1.4}
+#balance{font-size:12px;color:#4b4658;margin-top:4px}
+.actions{display:flex;gap:8px;padding:8px 12px}
+.actions button{flex:1}
+.tray{display:flex;gap:10px;overflow-x:auto;padding:10px 12px 14px;scroll-snap-type:x mandatory;background:#2d2a3a}
+.fcard{flex:0 0 auto;width:86px;scroll-snap-align:start;background:#44405a;color:#fff;border-radius:14px;padding:8px;text-align:center;cursor:pointer;border:3px solid transparent}
+.fcard.on{border-color:#d9a441;background:#56506f}
+.fcard .fi{height:40px;border-radius:9px;margin:0 auto 6px;border:2px solid rgba(255,255,255,.35)}
+.fcard b{display:block;font-size:13px}
+.fcard small{font-size:11px;opacity:.8}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;padding:14px 16px 20px;box-shadow:0 -6px 20px rgba(0,0,0,.2);transform:translateY(105%);transition:transform .25s ease;z-index:10}
+.sheet.open{transform:none}
+.sheet h3{font-size:16px;margin-bottom:10px}
+.sheet .row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sheet .row button{padding:10px 4px;font-size:14px}
+
+@media (min-width:800px){
+  #islandList{grid-template-columns:repeat(5,1fr)}
+  .isl:last-child{grid-column:auto}
+  .preview{margin:0 auto 12px;max-width:720px;width:calc(100% - 24px)}
+  .tray{justify-content:center}
+}
 </style>
 </head>
 <body>
-<div class="app">
-<header>
-  <div class="logo">오행<span>의집</span></div>
-  <span class="muted">나를 위한 공간 큐레이션</span>
-</header>
 
-<main>
-<section id="homePage">
-  <div class="hero">
-    <div class="eyebrow">FIVE ELEMENTS × INTERIOR</div>
-    <h1>나의 기운과 어울리는<br>공간을 발견하세요.</h1>
-    <p>생년월일과 공간의 특징을 바탕으로 나에게 어울리는 인테리어를 추천해요.</p>
-    <button class="primary" onclick="go('formPage')">나의 공간 분석 시작하기</button>
+<!-- 시작 화면 -->
+<section id="s-start" class="screen on">
+  <div class="logo">
+    <i style="background:#5fae6a">木</i><i style="background:#e8786a">火</i><i style="background:#c99a63">土</i>
+    <i style="background:#9aa7b4">金</i><i style="background:#4d9fd6">水</i>
   </div>
-  <h2>오행의집 이용 방법</h2>
-  <div class="card">① 생년월일과 출생 시간 선택</div>
-  <div class="card">② 오행 분석 결과 확인</div>
-  <div class="card">③ 공간별 가구와 소품 탐색</div>
-  <button class="secondary" onclick="go('savedPage')">저장한 분석 결과 보기</button>
+  <h1 class="title">오행의 집 GAME</h1>
+  <p class="subtitle">다섯 섬 중 하나에서 나만의 집을 꾸며보세요</p>
+  <button id="btnStart">GAME START</button>
+  <p id="visitText"></p>
 </section>
 
-<section id="formPage" class="hidden">
-  <div class="step-label"><span>맞춤 분석 정보 입력</span><span>1 / 3단계</span></div>
-  <div class="progress"><div style="width:33%"></div></div>
-  <h1>당신의 정보를 알려주세요</h1>
-  <p class="muted">모든 항목은 모바일에서 쉽게 선택할 수 있어요.</p>
-
-  <label for="birth">생년월일</label>
-  <input type="date" id="birth" min="1900-01-01">
-
-  <label for="calendar">양력 / 음력</label>
-  <select id="calendar">
-    <option value="solar">양력</option>
-    <option value="lunar">음력</option>
-  </select>
-
-  <label for="gender">성별 (선택)</label>
-  <select id="gender">
-    <option value="">선택하지 않음</option>
-    <option value="female">여성</option>
-    <option value="male">남성</option>
-  </select>
-
-  <label>태어난 시간</label>
-  <div class="time-grid" id="timeGrid"></div>
-  <p class="muted">시간을 모른다면 '모름'을 선택해 주세요.</p>
-
-  <label for="room">추천받을 공간</label>
-  <select id="room">
-    <option>거실</option><option>침실</option>
-    <option>주방</option><option>서재</option>
-  </select>
-
-  <label for="sunlight">공간의 채광</label>
-  <select id="sunlight">
-    <option value="normal">보통</option>
-    <option value="bright">햇빛이 풍부함</option>
-    <option value="dark">햇빛이 부족함</option>
-  </select>
-
-  <button class="primary" onclick="analyze()">오행 분석하기</button>
-</section>
-
-<section id="resultPage" class="hidden">
-  <div class="step-label"><span>나의 오행 분석</span><span>2 / 3단계</span></div>
-  <div class="progress"><div style="width:66%"></div></div>
-  <h1>나의 오행 밸런스</h1>
-  <div class="card" id="elementChart"></div>
-  <div class="result-box">
-    <div class="muted">공간에서 보완해 볼 요소</div>
-    <h2 id="weakElement"></h2>
-    <p id="analysisText"></p>
+<!-- 섬 선택 -->
+<section id="s-select" class="screen">
+  <div class="head">
+    <button id="btnSelBack" class="ghost">←</button>
+    <h2>섬 고르기</h2>
   </div>
-  <button class="secondary" onclick="saveAnalysis()">분석 결과 저장하기</button>
-  <button class="primary" onclick="go('recommendPage')">맞춤 인테리어 추천 보기</button>
-  <button class="secondary" onclick="go('formPage')">정보 다시 입력하기</button>
-  <p class="notice">이 결과는 오행 콘셉트를 활용한 체험용 추정치이며, 실제 사주팔자·만세력 계산 결과가 아닙니다. 음력 날짜의 정확한 변환도 수행하지 않습니다.</p>
-</section>
-
-<section id="recommendPage" class="hidden">
-  <div class="step-label"><span>맞춤 인테리어 추천</span><span>3 / 3단계</span></div>
-  <div class="progress"><div style="width:100%"></div></div>
-  <h1>나에게 어울리는 공간</h1>
-  <div class="result-box">
-    <div class="muted">나의 오행 추천 테마</div>
-    <h2 id="recommendTitle">나만의 인테리어</h2>
-    <p id="recommendDesc"></p>
+  <div id="islandList"></div>
+  <div class="preview">
+    <div class="big" id="pvMini"></div>
+    <div>
+      <h3 id="pvName">섬을 골라주세요</h3>
+      <p id="pvIntro">섬을 한 번 누르면 지형 미리보기가 나타납니다.</p>
+    </div>
   </div>
-
-  <h2>공간 선택</h2>
-  <div class="chips" id="roomFilters"></div>
-
-  <h2>상품 카테고리</h2>
-  <div class="chips" id="categoryFilters"></div>
-
-  <div class="product-grid" id="productGrid"></div>
-  <p class="notice">상품 이미지는 인테리어 참고용이며 실제 판매 상품과 다를 수 있습니다. 오늘의집과 공식 제휴된 서비스는 아닙니다.</p>
+  <div class="foot"><button id="btnStartIsland" disabled>이 섬에서 시작</button></div>
 </section>
 
-<section id="savedPage" class="hidden">
-  <h1>나의 보관함</h1>
-  <h2>저장한 분석</h2>
-  <div id="savedAnalysis"></div>
-  <h2>찜한 인테리어</h2>
-  <div class="product-grid" id="favoritesGrid"></div>
+<!-- 편집 -->
+<section id="s-edit" class="screen">
+  <div class="head">
+    <button id="btnBack" class="ghost">← 섬</button>
+    <h2 id="islandName"></h2>
+    <div class="seg">
+      <button data-view="top" class="on">위에서</button>
+      <button data-view="front">정면</button>
+    </div>
+  </div>
+  <div class="stage" id="stage"><div class="board" id="board"></div></div>
+  <div class="status">
+    <p id="msg"></p>
+    <p id="balance"></p>
+  </div>
+  <div class="actions">
+    <button id="btnRotate" class="ghost" disabled>↻ 90°</button>
+    <button id="btnCancel" class="ghost" disabled>취소</button>
+    <button id="btnConfirm" disabled>여기에 놓기</button>
+  </div>
+  <div class="tray" id="tray"></div>
+  <div class="sheet" id="sheet">
+    <h3 id="sheetTitle"></h3>
+    <div class="row">
+      <button class="ghost" data-act="move">이동</button>
+      <button class="ghost" data-act="rot">회전</button>
+      <button class="ghost" data-act="del">회수</button>
+      <button class="ghost" data-act="close">닫기</button>
+    </div>
+  </div>
 </section>
-</main>
-
-<nav>
-  <button id="navHome" onclick="go('homePage')"><b>⌂</b>홈</button>
-  <button id="navAnalysis" onclick="go('formPage')"><b>◉</b>오행 분석</button>
-  <button id="navRecommend" onclick="go('recommendPage')"><b>▦</b>추천</button>
-  <button id="navSaved" onclick="go('savedPage')"><b>♡</b>보관함</button>
-</nav>
-</div>
 
 <script>
-const elements=[
-  {key:"목",name:"목(木)",color:"#72ab83",desc:"원목, 식물, 녹색 계열을 활용해 자연스러운 생동감을 더해보세요."},
-  {key:"화",name:"화(火)",color:"#e69b78",desc:"따뜻한 조명과 코랄, 테라코타 계열로 온기를 표현해보세요."},
-  {key:"토",name:"토(土)",color:"#c5a66c",desc:"베이지, 도자기, 부드러운 패브릭으로 안정감을 연출해보세요."},
-  {key:"금",name:"금(金)",color:"#98a6b2",desc:"화이트, 메탈, 간결한 선으로 정돈된 분위기를 만들어보세요."},
-  {key:"수",name:"수(水)",color:"#6e9cba",desc:"블루 계열, 유리, 곡선형 소품으로 차분한 분위기를 연출해보세요."}
+/* =====================================================
+   0. 설정: Supabase 주소와 publishable key 입력 위치
+   비워두면 방문 집계만 건너뛰고 게임은 정상 동작합니다.
+   ===================================================== */
+const CONFIG = {
+  SUPABASE_URL: '',              // 예: 'https://abcd1234.supabase.co'
+  SUPABASE_PUBLISHABLE_KEY: ''   // 예: 'sb_publishable_xxxxxxxx' (secret key 금지)
+};
+
+/* =====================================================
+   1. 데이터: 섬 지형, 가구
+   지형 문자: . 배치 가능 / # 나무·바위 / ~ 물·용암 / = 길 / 공백 섬 밖
+   ===================================================== */
+const CELL = 32;               // 칸 한 변 크기(px)
+const W = 12;                  // 모든 섬의 가로 칸 수
+
+const FURN = {
+  bed:   {name:'침대',     w:2,h:1, el:'토', color:'#e3b77a'},
+  sofa:  {name:'소파',     w:2,h:1, el:'화', color:'#e8786a'},
+  shelf: {name:'책장',     w:1,h:2, el:'목', color:'#7fbf6a'},
+  table: {name:'식탁',     w:2,h:2, el:'토', color:'#b98656'},
+  plant: {name:'화분',     w:1,h:1, el:'목', color:'#4fa35f'},
+  lamp:  {name:'등불',     w:1,h:1, el:'화', color:'#f5b841'},
+  chest: {name:'수납장',   w:1,h:1, el:'금', color:'#9aa7b4'},
+  rug:   {name:'러그',     w:2,h:2, el:'수', color:'#7fb7e6'},
+  jar:   {name:'물항아리', w:1,h:1, el:'수', color:'#3b8fd0'}
+};
+
+const ISLANDS = [
+  { id:'mok', el:'목', name:'숲섬', color:'#a9d98f', dark:'#3f7a4a', water:'#7fbde0', path:'#e6d0a0',
+    intro:'나무와 숲길이 둘러싼 불규칙한 공터. 바람 소리가 집의 시간을 천천히 흐르게 합니다.',
+    map:[
+      "  ####      ",
+      " #......#   ",
+      "#..=....##  ",
+      "#.=.....#   ",
+      "#..====..#  ",
+      "#.....=..#  ",
+      "##...=....# ",
+      " #.......#  ",
+      "  #.=....#  ",
+      "   ##..##   ",
+      "     ##     "
+    ]},
+  { id:'hwa', el:'화', name:'노을 화산섬', color:'#d9906f', dark:'#4b3a3d', water:'#ff6b35', path:'#b8a08f',
+    intro:'붉은 암석과 어두운 화산 지형 사이의 테라스. 뜨거운 기운이 오래 머뭅니다.',
+    map:[
+      "   ####     ",
+      " ##....##   ",
+      "#........#  ",
+      "#..~~.....# ",
+      "#..~~..=..# ",
+      "##...====.# ",
+      " #........# ",
+      " #..=.....## ",
+      "  #.....#   ",
+      "   ####     ",
+      "            "
+    ]},
+  { id:'to', el:'토', name:'흙빛 언덕섬', color:'#c7a46b', dark:'#7a5a33', water:'#8ec5e8', path:'#e8d6b0',
+    intro:'완만한 언덕과 평평한 흙마당. 넓은 땅에 천천히 집을 세우기 좋은 섬입니다.',
+    map:[
+      "   ......   ",
+      " ..........",
+      "............",
+      "....==......",
+      "............",
+      "..........=.",
+      "...........#",
+      ".....====..#",
+      "...........#",
+      "   .....#    ",
+      "            "
+    ]},
+  { id:'geum', el:'금', name:'은빛 바위섬', color:'#c4ccd6', dark:'#5d6673', water:'#9fd0ea', path:'#dfe3e8',
+    intro:'각진 암반과 돌길이 둘러싼 정원. 단정한 선을 따라 가구를 맞춰 보세요.',
+    map:[
+      " ##########",
+      "#..........#",
+      "#.=========#",
+      "#.=.......=#",
+      "#.=.......=#",
+      "#.=.......=#",
+      "#.=.......=#",
+      "#.=========#",
+      "#..........#",
+      " ##########  ",
+      "            "
+    ]},
+  { id:'su', el:'수', name:'물결섬', color:'#8fd0a6', dark:'#2f6a4a', water:'#4d9fd6', path:'#e8d6b0',
+    intro:'물길과 작은 다리로 이어지는 두 개의 공터. 물결 소리를 들으며 꾸며보세요.',
+    map:[
+      "  ####      ",
+      " #....#     ",
+      "#......#~~~~",
+      "#.....=~~~~~",
+      "#.....=~~~~~",
+      "#.....=~~~~~",
+      "#.....#=====",
+      " #.....#~~~~",
+      "  ##...#~~~~",
+      "    ..#=====",
+      "      ##    "
+    ]}
 ];
 
-const products=[
- {id:1,name:"내추럴 원목 사이드 테이블",cat:"가구",room:["거실","침실"],el:"목",photo:"photo-1499933374294-4584851497cc"},
- {id:2,name:"우드 오픈 선반",cat:"가구",room:["거실","서재"],el:"목",photo:"photo-1594620302200-9a762244a156"},
- {id:3,name:"그린 식물 인테리어",cat:"소품",room:["거실","서재","침실"],el:"목",photo:"photo-1416879595882-3373a0480b5b"},
- {id:4,name:"웜톤 테이블 램프",cat:"조명",room:["침실","거실"],el:"화",photo:"photo-1507473885765-e6ed057f782c"},
- {id:5,name:"따뜻한 무드 조명",cat:"조명",room:["거실","서재"],el:"화",photo:"photo-1543198126-a8ad8e47fb22"},
- {id:6,name:"테라코타 장식 소품",cat:"소품",room:["거실","주방"],el:"화",photo:"photo-1578749556568-bc2c40e68b61"},
- {id:7,name:"베이지 린넨 쿠션",cat:"패브릭",room:["거실","침실"],el:"토",photo:"photo-1584100936595-c0654b55a2e2"},
- {id:8,name:"내추럴 패브릭 러그",cat:"패브릭",room:["거실","침실"],el:"토",photo:"photo-1600210492486-724fe5c67fb0"},
- {id:9,name:"세라믹 화병",cat:"소품",room:["거실","주방"],el:"토",photo:"photo-1578500494198-246f612d3b3d"},
- {id:10,name:"미니멀 화이트 체어",cat:"가구",room:["거실","서재"],el:"금",photo:"photo-1503602642458-232111445657"},
- {id:11,name:"모던 메탈 조명",cat:"조명",room:["서재","주방"],el:"금",photo:"photo-1507473885765-e6ed057f782c"},
- {id:12,name:"화이트 미니멀 소품",cat:"소품",room:["침실","주방"],el:"금",photo:"photo-1490312278390-ab64016e0aa9"},
- {id:13,name:"블루 패브릭 포인트",cat:"패브릭",room:["침실","거실"],el:"수",photo:"photo-1616486338812-3dadae4b4ace"},
- {id:14,name:"유리 오브제",cat:"소품",room:["거실","주방"],el:"수",photo:"photo-1490312278390-ab64016e0aa9"},
- {id:15,name:"차분한 무드 가구",cat:"가구",room:["서재","침실"],el:"수",photo:"photo-1618221195710-dd6b41faaea6"},
- {id:16,name:"원목 다이닝 테이블",cat:"가구",room:["주방"],el:"목",photo:"photo-1499933374294-4584851497cc"},
- {id:17,name:"코튼 테이블 패브릭",cat:"패브릭",room:["주방"],el:"토",photo:"photo-1600210492486-724fe5c67fb0"},
- {id:18,name:"우드 펜던트 조명",cat:"조명",room:["주방"],el:"화",photo:"photo-1543198126-a8ad8e47fb22"}
-];
+// 지도 정규화: 모든 행을 같은 폭으로 맞춤
+ISLANDS.forEach(isl => { isl.map = isl.map.map(r => r.padEnd(W, ' ').slice(0, W)); });
 
-const rooms=["거실","침실","주방","서재"];
-const categories=["전체","가구","조명","패브릭","소품"];
-const times=[
- "자시 23~01","축시 01~03","인시 03~05",
- "묘시 05~07","진시 07~09","사시 09~11",
- "오시 11~13","미시 13~15","신시 15~17",
- "유시 17~19","술시 19~21","해시 21~23","모름"
-];
-let selectedTime="모름";
-let selectedRoom="거실";
-let selectedCategory="전체";
-let result=null;
-let favorites=read("ohaeng_favorites",[]);
+const TYPE = {'.':'land', '#':'blk', '~':'water', '=':'path', ' ':'void'};
+const TILE_COLOR = (isl, ch) => ({'.':isl.color,'#':isl.dark,'~':isl.water,'=':isl.path,' ':'transparent'})[ch];
+const EL_HANJA = {목:'木',화:'火',토:'土',금:'金',수:'水'};
 
-function read(key,fallback){
- try{return JSON.parse(localStorage.getItem(key))??fallback}
- catch(e){return fallback}
-}
-function write(key,value){
- try{localStorage.setItem(key,JSON.stringify(value));return true}
- catch(e){alert("브라우저 저장 기능을 사용할 수 없습니다.");return false}
-}
-function escapeHTML(s){
- return String(s).replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",
- '"':"&quot;","'":"&#39;"
- })[c]);
-}
-function go(id){
- if(id==="recommendPage"&&!result){
-  alert("먼저 오행 분석을 진행해 주세요.");
-  id="formPage";
- }
- if(id==="resultPage"&&!result)id="formPage";
- document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
- document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
- const map={homePage:"navHome",formPage:"navAnalysis",resultPage:"navAnalysis",recommendPage:"navRecommend",savedPage:"navSaved"};
- document.getElementById(map[id]).classList.add("active");
- if(id==="recommendPage")renderProducts();
- if(id==="savedPage")renderSaved();
- window.scrollTo(0,0);
-}
-function renderTimes(){
- document.getElementById("timeGrid").innerHTML=times.map(t=>
- `<button type="button" class="chip ${selectedTime===t?"active":""}" data-time="${escapeHTML(t)}">${escapeHTML(t)}</button>`
- ).join("");
- document.querySelectorAll("[data-time]").forEach(b=>{
-  b.onclick=()=>{selectedTime=b.dataset.time;renderTimes()};
- });
-}
-function analyze(){
- const birth=document.getElementById("birth").value;
- if(!birth){alert("생년월일을 선택해 주세요.");return}
- const [year,month,day]=birth.split("-").map(Number);
- const calendar=document.getElementById("calendar").value;
- const gender=document.getElementById("gender").value;
- const sunlight=document.getElementById("sunlight").value;
- selectedRoom=document.getElementById("room").value;
- selectedCategory="전체";
+/* =====================================================
+   2. 저장: localStorage (섬마다 키 분리)
+   ===================================================== */
+const Store = {
+  key: id => 'ohaeng-house-' + id,
+  load(id) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(this.key(id)) || '[]');
+      return Array.isArray(arr) ? arr.filter(it => FURN[it.f]) : [];
+    } catch (e) { return []; }
+  },
+  save(id, items) {
+    try { localStorage.setItem(this.key(id), JSON.stringify(items)); } catch (e) { /* 저장 실패해도 플레이 계속 */ }
+  }
+};
 
- // 체험용 점수: 실제 사주팔자 또는 만세력 계산이 아님
- const timeIndex=Math.max(0,times.indexOf(selectedTime));
- const seed=year*7+month*11+day*13+timeIndex*5;
- let scores=elements.map((_,i)=>20+((seed+i*37+i*i*11)%61));
- if(sunlight==="bright")scores[1]=Math.min(95,scores[1]+8);
- if(sunlight==="dark")scores[4]=Math.min(95,scores[4]+8);
- const weakest=scores.indexOf(Math.min(...scores));
+/* =====================================================
+   3. 배치 판정 (순수 함수)
+   ===================================================== */
+const Place = {
+  size(f, r) { const d = FURN[f]; return r ? {w:d.h, h:d.w} : {w:d.w, h:d.h}; },
+  occupies(it, cx, cy) {
+    const {w, h} = this.size(it.f, it.r);
+    return cx >= it.x && cx < it.x + w && cy >= it.y && cy < it.y + h;
+  },
+  // 모든 칸이 '.'(배치 가능)이고 다른 가구와 겹치지 않을 때만 true
+  can(isl, items, f, r, x, y, ignoreUid) {
+    const {w, h} = this.size(f, r);
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+      const cx = x + i, cy = y + j;
+      if (cy < 0 || cy >= isl.map.length || cx < 0 || cx >= W) return false;
+      if (isl.map[cy][cx] !== '.') return false;
+      if (items.some(it => it.uid !== ignoreUid && this.occupies(it, cx, cy))) return false;
+    }
+    return true;
+  }
+};
 
- result={birth,calendar,gender,time:selectedTime,
-  room:selectedRoom,sunlight,scores,weakest,
-  created:new Date().toLocaleString("ko-KR")};
- renderResult();
- go("resultPage");
+/* =====================================================
+   4. 방문 집계 (Supabase RPC, 실패해도 게임은 계속)
+   ===================================================== */
+const Visit = {
+  id() {
+    let v = localStorage.getItem('ohaeng-visitor-id');
+    if (!v) {
+      v = (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+        .replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }));
+      localStorage.setItem('ohaeng-visitor-id', v);
+    }
+    return v;
+  },
+  async record() {
+    const el = document.getElementById('visitText');
+    const url = (CONFIG.SUPABASE_URL || '').replace(/\/$/, '');
+    const key = CONFIG.SUPABASE_PUBLISHABLE_KEY;
+    if (!url || !key) { el.textContent = ''; return; }
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(url + '/rest/v1/rpc/record_visit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', apikey: key},
+        body: JSON.stringify({p_visitor_id: this.id()}),
+        signal: ctrl.signal
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const d = await res.json();
+      el.textContent = `오늘 방문자 ${d.today} · 누적 방문자 ${d.total}`;
+    } catch (e) {
+      el.textContent = '';   // 실패 시 표시만 생략
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+};
+
+/* =====================================================
+   5. 화면 전환과 UI
+   ===================================================== */
+const $ = id => document.getElementById(id);
+const screens = {start:$('s-start'), select:$('s-select'), edit:$('s-edit')};
+function show(name) {
+  Object.values(screens).forEach(s => s.classList.remove('on'));
+  screens[name].classList.add('on');
 }
-function renderResult(){
- if(!result)return;
- const {scores,weakest}=result;
- document.getElementById("elementChart").innerHTML=
- elements.map((e,i)=>`
- <div class="element-row">
-  <strong>${e.key}</strong>
-  <div class="bar"><div style="width:${scores[i]}%;background:${e.color}"></div></div>
-  <span>${scores[i]}</span>
- </div>`).join("");
- const e=elements[weakest];
- document.getElementById("weakElement").textContent=e.name;
- document.getElementById("analysisText").textContent=e.desc;
- document.getElementById("recommendTitle").textContent=e.name+" 테마";
- document.getElementById("recommendDesc").textContent=e.desc;
+
+function miniGrid(isl) {
+  const cols = W;
+  return `<div class="mg" style="grid-template-columns:repeat(${cols},1fr)">` +
+    isl.map.join('').split('').map(ch => `<i style="background:${TILE_COLOR(isl, ch)}"></i>`).join('') + '</div>';
 }
-function saveAnalysis(){
- if(!result)return;
- if(write("ohaeng_analysis",result))alert("분석 결과를 저장했어요.");
+
+let pick = null;
+function buildSelect() {
+  const list = $('islandList');
+  list.innerHTML = '';
+  ISLANDS.forEach(isl => {
+    const b = document.createElement('div');
+    b.className = 'isl' + (pick && pick.id === isl.id ? ' on' : '');
+    b.dataset.id = isl.id;
+    b.innerHTML = miniGrid(isl) + `<b>${EL_HANJA[isl.el]} · ${isl.name}</b><small>${isl.el}의 섬</small>`;
+    b.onclick = () => { pick = isl; buildSelect(); showPreview(isl); $('btnStartIsland').disabled = false; };
+    list.appendChild(b);
+  });
 }
-function renderFilters(){
- document.getElementById("roomFilters").innerHTML=
- rooms.map(r=>`<button class="chip ${selectedRoom===r?"active":""}" data-room="${r}">${r}</button>`).join("");
- document.getElementById("categoryFilters").innerHTML=
- categories.map(c=>`<button class="chip ${selectedCategory===c?"active":""}" data-cat="${c}">${c}</button>`).join("");
- document.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>{
-  selectedRoom=b.dataset.room;renderProducts();
- });
- document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{
-  selectedCategory=b.dataset.cat;renderProducts();
- });
+function showPreview(isl) {
+  $('pvMini').innerHTML = miniGrid(isl);
+  $('pvName').textContent = `${EL_HANJA[isl.el]} · ${isl.name}`;
+  $('pvIntro').textContent = isl.intro;
 }
-function productCard(p){
- const liked=favorites.includes(p.id);
- const url="https://images.unsplash.com/"+p.photo+"?auto=format&fit=crop&w=500&q=80";
- return `<div class="product">
-  <div class="photo">
-   <img src="${url}" alt="${escapeHTML(p.name)}" loading="lazy"
-    onerror="this.style.display='none';this.parentElement.style.background='#e8f0eb'">
-   <button class="heart ${liked?"on":""}" data-fav="${p.id}" aria-label="찜하기">${liked?"♥":"♡"}</button>
-  </div>
-  <div class="product-title">${escapeHTML(p.name)}</div>
-  <div class="product-tag">${p.cat} · ${p.el} 테마</div>
- </div>`;
+
+/* ===== 편집 상태 ===== */
+let cur = null;        // 현재 섬
+let items = [];        // 배치된 가구 [{uid,f,x,y,r}]
+let view = 'top';      // top | front
+let mode = null;       // 배치 중: {f,r,uid|null,x|null,y|null}
+let selUid = null;
+
+const board = $('board');
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+function enter(isl) {
+  cur = isl;
+  items = Store.load(isl.id);
+  mode = null; selUid = null;
+  $('islandName').textContent = `${EL_HANJA[isl.el]} · ${isl.name}`;
+  board.style.setProperty('--land', isl.color);
+  board.style.setProperty('--blk', isl.dark);
+  board.style.setProperty('--water', isl.water);
+  board.style.setProperty('--path', isl.path);
+  setView('top');
+  show('edit');
+  msg('가구를 고르고 바닥 칸을 누르면 배치 미리보기가 나타납니다.');
+  renderAll();
 }
-function bindFavorites(){
- document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{
-  const id=Number(b.dataset.fav);
-  favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];
-  write("ohaeng_favorites",favorites);
-  if(!document.getElementById("savedPage").classList.contains("hidden"))renderSaved();
-  else renderProducts();
- });
+
+function msg(t) { $('msg').textContent = t; }
+
+function renderBoard() {
+  const R = cur.map.length, C = W;
+  board.style.width = C * CELL + 'px';
+  board.style.height = R * CELL + 'px';
+  board.className = 'board' + (view === 'front' ? ' front' : '');
+  let h = '';
+  for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) {
+    h += `<div class="cell ${TYPE[cur.map[y][x]]}" data-x="${x}" data-y="${y}"
+      style="left:${x*CELL}px;top:${y*CELL}px;width:${CELL}px;height:${CELL}px"></div>`;
+  }
+  items.forEach(it => {
+    if (mode && mode.uid === it.uid) return;   // 이동 중인 가구는 숨김
+    const d = FURN[it.f], s = Place.size(it.f, it.r);
+    h += `<div class="item${selUid === it.uid ? ' sel' : ''}" data-uid="${it.uid}"
+      style="left:${it.x*CELL}px;top:${it.y*CELL}px;width:${s.w*CELL}px;height:${s.h*CELL}px;background:${d.color}">${d.name}</div>`;
+  });
+  if (mode && mode.x !== null) {
+    const s = Place.size(mode.f, mode.r);
+    const ok = Place.can(cur, items, mode.f, mode.r, mode.x, mode.y, mode.uid);
+    h += `<div class="ghost ${ok ? 'ok' : 'bad'}"
+      style="left:${mode.x*CELL}px;top:${mode.y*CELL}px;width:${s.w*CELL}px;height:${s.h*CELL}px"></div>`;
+  }
+  board.innerHTML = h;
 }
-function renderProducts(){
- if(!result)return;
- renderFilters();
- const weak=elements[result.weakest].key;
- let items=products.filter(p=>p.room.includes(selectedRoom));
- if(selectedCategory!=="전체")items=items.filter(p=>p.cat===selectedCategory);
- // 해당 오행 상품을 우선 배치하고 다른 상품도 탐색 가능
- items.sort((a,b)=>Number(b.el===weak)-Number(a.el===weak));
- document.getElementById("productGrid").innerHTML=
- items.length?items.map(productCard).join(""):
- '<div class="empty">이 조건에 해당하는 상품이 없습니다.</div>';
- bindFavorites();
+
+function renderTray() {
+  const tray = $('tray');
+  tray.innerHTML = '';
+  Object.entries(FURN).forEach(([key, d]) => {
+    const c = document.createElement('div');
+    c.className = 'fcard' + (mode && mode.f === key && !mode.uid ? ' on' : '');
+    c.innerHTML = `<div class="fi" style="background:${d.color}"></div><b>${d.name}</b><small>${d.w}×${d.h} · ${d.el}</small>`;
+    c.onclick = () => selectFurn(key);
+    tray.appendChild(c);
+  });
 }
-function renderSaved(){
- const saved=read("ohaeng_analysis",null);
- document.getElementById("savedAnalysis").innerHTML=saved?`
-  <div class="card">
-   <strong>${escapeHTML(saved.birth)} 분석 결과</strong>
-   <p class="muted">${escapeHTML(saved.created||"저장된 분석")}</p>
-   <button class="secondary" id="loadResult">분석 결과 불러오기</button>
-   <button class="secondary" id="deleteResult">저장된 분석 삭제</button>
-  </div>`:'<p class="empty">저장된 분석 결과가 없습니다.</p>';
- if(saved){
-  document.getElementById("loadResult").onclick=()=>{
-   result=saved;
-   selectedRoom=rooms.includes(saved.room)?saved.room:"거실";
-   selectedCategory="전체";
-   renderResult();go("resultPage");
-  };
-  document.getElementById("deleteResult").onclick=()=>{
-   if(confirm("저장된 분석 결과를 삭제할까요?")){
-    localStorage.removeItem("ohaeng_analysis");renderSaved();
-   }
-  };
- }
- const liked=products.filter(p=>favorites.includes(p.id));
- document.getElementById("favoritesGrid").innerHTML=
- liked.length?liked.map(productCard).join(""):
- '<div class="empty">찜한 인테리어가 없습니다.</div>';
- bindFavorites();
+
+function renderControls() {
+  const editing = !!mode;
+  $('btnRotate').disabled = !editing;
+  $('btnCancel').disabled = !editing;
+  $('btnConfirm').disabled = !(editing && mode.x !== null && Place.can(cur, items, mode.f, mode.r, mode.x, mode.y, mode.uid));
+  $('balance').textContent = `배치한 가구 ${items.length}개 · ${cur.name}`;
 }
-document.getElementById("birth").max=new Date().toLocaleDateString("en-CA");
-renderTimes();
-go("homePage");
+
+function renderAll() { renderBoard(); renderTray(); renderControls(); }
+
+function setView(v) {
+  view = v;
+  document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  board.className = 'board' + (v === 'front' ? ' front' : '');
+}
+
+function selectFurn(key) {
+  if (mode && !mode.uid && mode.f === key) { mode = null; msg('배치를 취소했어요.'); }
+  else { mode = {f:key, r:0, uid:null, x:null, y:null}; msg(`${FURN[key].name}: 바닥 칸을 눌러 위치를 정하세요.`); }
+  renderAll();
+}
+
+function cancelMode() {
+  mode = null;
+  renderAll();
+  msg('취소했어요.');
+}
+
+function confirmMode() {
+  if (!mode || mode.x === null || !Place.can(cur, items, mode.f, mode.r, mode.x, mode.y, mode.uid)) return;
+  if (mode.uid) {
+    const it = items.find(i => i.uid === mode.uid);
+    if (it) Object.assign(it, {x:mode.x, y:mode.y, r:mode.r});
+    msg('가구를 옮겼어요.');
+  } else {
+    items.push({uid:uid(), f:mode.f, x:mode.x, y:mode.y, r:mode.r});
+    msg(`${FURN[mode.f].name}을(를) 놓았어요!`);
+  }
+  mode = null;
+  Store.save(cur.id, items);
+  renderAll();
+}
+
+function openSheet(id) {
+  selUid = id;
+  const it = items.find(i => i.uid === id);
+  if (!it) return;
+  $('sheetTitle').textContent = FURN[it.f].name + ' 조절';
+  $('sheet').classList.add('open');
+  renderBoard();
+}
+function closeSheet() {
+  $('sheet').classList.remove('open');
+  selUid = null;
+  renderBoard();
+}
+
+/* ===== 이벤트 ===== */
+// 보드: 칸 탭(배치 위치 지정) / 가구 탭(조절 시트)
+board.addEventListener('click', e => {
+  const itemEl = e.target.closest('.item');
+  if (itemEl) {
+    if (!mode) openSheet(itemEl.dataset.uid);
+    return;
+  }
+  const c = e.target.closest('.cell');
+  if (!c || !mode) return;
+  mode.x = +c.dataset.x;
+  mode.y = +c.dataset.y;
+  renderAll();
+  msg(Place.can(cur, items, mode.f, mode.r, mode.x, mode.y, mode.uid)
+    ? '여기에 놓을 수 있어요. "여기에 놓기"를 누르세요.'
+    : '이 자리에는 놓을 수 없어요. 다른 칸을 골라주세요.');
+});
+
+// PC 마우스: 호버로 미리보기
+board.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' || !mode) return;
+  const c = e.target.closest('.cell');
+  if (!c) return;
+  const x = +c.dataset.x, y = +c.dataset.y;
+  if (x !== mode.x || y !== mode.y) { mode.x = x; mode.y = y; renderAll(); }
+});
+
+// 시트 버튼
+document.querySelector('#sheet').addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  const it = items.find(i => i.uid === selUid);
+  if (act === 'close') { closeSheet(); return; }
+  if (!it) { closeSheet(); return; }
+  if (act === 'move') {
+    mode = {f:it.f, r:it.r, uid:it.uid, x:it.x, y:it.y};
+    $('sheet').classList.remove('open');
+    selUid = null;
+    msg(`${FURN[it.f].name}을(를) 새 위치로 옮기세요.`);
+    renderAll();
+  } else if (act === 'rot') {
+    const nr = it.r ? 0 : 1;
+    if (Place.can(cur, items, it.f, nr, it.x, it.y, it.uid)) {
+      it.r = nr; Store.save(cur.id, items); msg('회전했어요.');
+    } else msg('회전하면 주변 칸에 걸려서 돌릴 수 없어요.');
+    renderBoard();
+  } else if (act === 'del') {
+    items = items.filter(i => i.uid !== it.uid);
+    Store.save(cur.id, items);
+    $('sheet').classList.remove('open');
+    selUid = null;
+    msg('가구를 회수했어요.');
+    renderAll();
+  }
+});
+
+// 하단 버튼
+$('btnRotate').onclick = () => {
+  if (!mode) return;
+  mode.r = mode.r ? 0 : 1;
+  renderAll();
+};
+$('btnCancel').onclick = cancelMode;
+$('btnConfirm').onclick = confirmMode;
+
+// 시점 전환: 같은 데이터, 좌표·회전 유지 (CSS만 변경)
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => setView(b.dataset.view));
+
+// 화면 이동
+$('btnStart').onclick = () => { show('select'); buildSelect(); if (pick) showPreview(pick); };
+$('btnSelBack').onclick = () => show('start');
+$('btnStartIsland').onclick = () => { if (pick) enter(pick); };
+$('btnBack').onclick = () => {
+  mode = null;
+  $('sheet').classList.remove('open');
+  show('select');
+  buildSelect();
+  showPreview(cur);
+};
+
+// 저장되지 않은 상태 방지: 페이지 떠날 때 한 번 더 저장
+window.addEventListener('pagehide', () => { if (cur) Store.save(cur.id, items); });
+
+// 시작: 첫 화면 열릴 때 방문 집계 1회 (DB에서 날짜·브라우저 중복 제거)
+Visit.record();
 </script>
 </body>
 </html>
