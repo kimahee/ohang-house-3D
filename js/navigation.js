@@ -15,7 +15,20 @@
   ];
   class Terrain {
     constructor(map) {
-      this.bytes = Uint8Array.from(atob(map.mask), (c) => c.charCodeAt(0));
+      this.ground = Uint8Array.from(atob(map.mask), (c) => c.charCodeAt(0));
+      this.bytes = this.ground.slice();
+    }
+    setHomes(homes) {
+      this.bytes.set(this.ground);
+      for (const home of homes) {
+        const cx = Math.floor(home.x / CELL),
+          cy = Math.floor(home.y / CELL);
+        for (let row = cy - 3; row <= cy; row++)
+          for (let col = cx - 3; col <= cx + 3; col++) {
+            const bit = row * W + col;
+            this.bytes[bit >> 3] &= ~(128 >> bit % 8);
+          }
+      }
     }
     cell(x, y) {
       if (x < 0 || y < 0 || x >= W || y >= H) return false;

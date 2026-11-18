@@ -113,13 +113,20 @@
     }
     return pendingSession;
   }
-  const seedUid = uuid();
+  const seedUid = load("ohaeng:solo-uid") || uuid();
+  if (mode === "solo") save("ohaeng:solo-uid", seedUid);
+  const homeKey = "ohaeng:solo-home";
+  let soloHome = mode === "solo" ? load(homeKey) : null;
   let solo = null,
     soloEvents = [],
     soloSeq = 0,
     lastSaid = 0;
   function soloSnapshot() {
+    soloHome = load(homeKey, soloHome);
     return {
+      homeVersion: soloHome?.rev || 0,
+      homes: soloHome?.room === solo.room ? [soloHome] : [],
+      myHome: soloHome,
       self: { ...solo },
       players: [],
       events: soloEvents.map((m) => ({ ...m, age: (Date.now() - m.at) / 1000 })),
@@ -150,10 +157,37 @@
       if (solo?.sid === p.p_session) solo = null;
       return true;
     }
-    if (!solo || solo.sid !== p.p_session) throw new Error("ROOM_GONE");
+    if (!solo || solo.sid !== p.p_session || solo.room !== p.p_room) throw new Error("ROOM_GONE");
     if (verb === "tick") {
       Object.assign(solo, { x: p.p_x, y: p.p_y, face: p.p_face, seat: p.p_seat });
       if (solo.seat >= 0) [solo.x, solo.y] = G.maps[solo.room].seats[solo.seat];
+      return soloSnapshot();
+    }
+    if (verb === "place_home") {
+      soloHome = load(homeKey, soloHome);
+      if (!Object.hasOwn(G.homes.designs, p.p_kind)) throw new Error("HOME_GROUND");
+      if (
+        soloHome &&
+        soloHome.room === solo.room &&
+        soloHome.kind === p.p_kind &&
+        soloHome.x === p.p_x &&
+        soloHome.y === p.p_y
+      )
+        return soloSnapshot();
+      if ((soloHome?.rev || 0) !== p.p_expected) throw new Error("HOME_STALE");
+      const map = G.maps[solo.room];
+      const reason = G.homes.problem(map, new G.Terrain(map), p.p_x, p.p_y, [], [solo]);
+      if (reason) throw new Error(reason);
+      soloHome = {
+        uid: seedUid,
+        room: solo.room,
+        kind: p.p_kind,
+        x: p.p_x,
+        y: p.p_y,
+        name: solo.name,
+        rev: p.p_expected + 1
+      };
+      save(homeKey, soloHome);
       return soloSnapshot();
     }
     if (verb === "say") {
@@ -176,7 +210,11 @@
     throw new Error("SIGN_IN");
   }
   async function rpc(verb, p = {}, options = {}) {
-    if (mode === "solo") return single(verb, p);
+    if (mode === "solo") {
+      if (verb === "place_home" && navigator.locks)
+        return navigator.locks.request(homeKey, () => single(verb, p));
+      return single(verb, p);
+    }
     if (!valid) throw new Error("CONFIG");
     const endpoint = mode === "cloud" ? base + "/rest/v1/rpc/ohaeng_" : local + "/rpc/ohaeng_";
     const h = mode === "cloud" ? { apikey: key } : {};

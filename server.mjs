@@ -46,6 +46,7 @@ const calls = {
   counts: [],
   enter: ["p_session", "p_room", "p_name", "p_color"],
   tick: ["p_session", "p_room", "p_x", "p_y", "p_face", "p_seat"],
+  place_home: ["p_session", "p_room", "p_kind", "p_x", "p_y", "p_expected"],
   say: ["p_session", "p_room", "p_event", "p_kind", "p_text"],
   block: ["p_target", "p_on"],
   report: ["p_session", "p_seq", "p_reason"],
@@ -90,7 +91,7 @@ const server = createServer(async (req, res) => {
         const id = randomUUID();
         return reply(res, 200, { token: id + "." + signature(id), uid: id });
       }
-      const verb = pathname.match(/^\/api\/rpc\/ohaeng_([a-z]+)$/)?.[1];
+      const verb = pathname.match(/^\/api\/rpc\/ohaeng_([a-z_]+)$/)?.[1];
       if (!Object.hasOwn(calls, verb)) return reply(res, 404, { message: "NOT_FOUND" });
       const uid = identity(req);
       if (!uid && verb !== "counts") return reply(res, 401, { message: "SIGN_IN" });
@@ -123,7 +124,7 @@ const server = createServer(async (req, res) => {
   } catch (error) {
     if (error.code === "ENOENT") return reply(res, 404, { message: "NOT_FOUND" });
     const known =
-      /^(SIGN_IN|PROFILE|SESSION_MISMATCH|ROOM_GONE|MESSAGE|SLOW_DOWN|BLOCK_SELF|USER_GONE|REPORT|MESSAGE_GONE)$/;
+      /^(SIGN_IN|PROFILE|SESSION_MISMATCH|ROOM_GONE|MESSAGE|SLOW_DOWN|BLOCK_SELF|USER_GONE|REPORT|MESSAGE_GONE|HOME_GROUND|HOME_PATH|HOME_NEIGHBOR|HOME_RESIDENT|HOME_STALE)$/;
     return reply(res, 400, { message: known.test(error.message) ? error.message : "BAD_REQUEST" });
   }
 });

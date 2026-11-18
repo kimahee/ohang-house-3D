@@ -1289,3 +1289,364 @@ dialog::backdrop {
     animation: none !important;
   }
 }
+
+/* Each coastline magnifies independently while the water and nearby islands stay in place. */
+.atlas-sea,
+.atlas-pieces {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.interactive-atlas {
+  touch-action: none;
+  user-select: none;
+}
+.interactive-atlas .atlas-image {
+  opacity: 0;
+  pointer-events: none;
+}
+.interactive-atlas .atlas-sea,
+.interactive-atlas .atlas-pieces {
+  display: block;
+}
+.map-islet {
+  position: absolute;
+  pointer-events: none;
+  transition:
+    transform 0.24s ease,
+    filter 0.24s ease;
+  z-index: 1;
+}
+.map-islet.enlarged {
+  transform: scale(1.22);
+  z-index: 2;
+  filter: drop-shadow(0 3px 4px #384e3b55);
+}
+.atlas-coast {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: pointer;
+  background-repeat: no-repeat;
+}
+.atlas #map-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.atlas .island-pin {
+  pointer-events: auto;
+}
+.atlas figcaption,
+.atlas .north,
+.atlas-note {
+  z-index: 4;
+  pointer-events: none;
+}
+.island-card[aria-pressed="true"] .card-art {
+  background-size: 125%;
+}
+
+/* The housing booklet uses the atlas paper, ink and element seals. */
+.home-action {
+  color: var(--green);
+  background: #ebefe3;
+  border-color: #a7b59c;
+}
+.world-home {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.world-home img {
+  position: absolute;
+  bottom: 0;
+  left: -50px;
+  width: 100px;
+  height: 91px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.world-home small {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 1px 4px;
+  border: 1px solid #9b9379;
+  border-radius: 3px;
+  background: #fff6debf;
+  color: #4d483a;
+  font: 600 8px/1.35 var(--sans);
+}
+.world-home.mine small {
+  background: #f5f1d8ef;
+  border-color: #718366;
+  color: #3b5743;
+}
+#home-editor {
+  width: min(595px, calc(100% - 26px));
+  max-height: min(90dvh, 830px);
+}
+.housebook {
+  position: relative;
+  padding: 25px 29px 21px;
+}
+.housebook,
+.housebook button {
+  word-break: keep-all;
+}
+.home-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.home-kicker i {
+  width: 15px;
+  height: 15px;
+}
+.home-divider {
+  opacity: 0.5;
+  margin: 0 1px;
+}
+.housebook h2 {
+  margin: 7px 28px 16px 0;
+  font: 600 clamp(24px, 4.5vw, 32px) / 1.4 var(--serif);
+  letter-spacing: -0.065em;
+  outline: 0;
+}
+.home-plate {
+  display: grid;
+  grid-template-columns: 49% 1fr;
+  align-items: center;
+  min-height: 189px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 22% 65%, var(--wash), transparent 65%), #fbf8ed;
+  overflow: hidden;
+}
+.house-portrait {
+  display: grid;
+  place-items: center;
+  padding: 12px 6px 10px 12px;
+}
+.house-portrait img {
+  width: 100%;
+  height: 167px;
+  object-fit: contain;
+}
+.home-description {
+  padding: 14px 16px 14px 4px;
+}
+.home-element {
+  display: inline-block;
+  background: #fff9eda8;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 0px 6px;
+  font: 600 12px/1.65 var(--serif);
+}
+.home-description h3 {
+  margin: 6px 0;
+  font: 600 clamp(20px, 4vw, 26px) / 1.46 var(--serif);
+  letter-spacing: -0.055em;
+}
+.home-description p {
+  margin: 0;
+  color: var(--softink);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.home-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 12px 0 0;
+}
+.home-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 2px 7px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 6px;
+}
+.home-option[aria-pressed="true"] {
+  border: 2px solid var(--accent);
+  padding: 5px 1px 6px;
+  background: var(--wash);
+}
+.home-option img {
+  width: 100%;
+  height: 48px;
+  object-fit: contain;
+}
+.home-option span {
+  font-size: clamp(10px, 2.4vw, 12px);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.home-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+  margin-top: 16px;
+}
+.home-footer .text-back {
+  margin: 0;
+  padding: 8px 0;
+}
+.home-footer .primary {
+  padding: 10px 17px;
+  min-height: 42px;
+  font-size: 14px;
+}
+.site-help {
+  margin: -8px 0 10px;
+  color: var(--softink);
+  font-size: 13px;
+}
+.placement-map {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 56vh, 515px);
+  aspect-ratio: 4/3;
+  margin: 0 auto;
+  border-radius: 7px;
+  outline: 1px solid #a4aa95;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: crosshair;
+  background: #e7e5d3;
+}
+.placement-map:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+#placement-terrain,
+#placement-scenery,
+#placement-neighbors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.mini-home,
+#plot-ghost {
+  position: absolute;
+  width: 10%;
+  height: 12.14%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+.mini-home,
+#plot-ghost img {
+  object-fit: contain;
+  object-position: center bottom;
+}
+#plot-ghost img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 1px #fff);
+}
+#plot-ghost span {
+  position: absolute;
+  width: 99%;
+  height: 41%;
+  left: 0.5%;
+  bottom: -4%;
+  border: 2px dashed #285c3c;
+  border-radius: 50%;
+  background: #d2f2b8a3;
+}
+#plot-ghost.unsuitable span {
+  border-color: #903d32;
+  background: #ffc1a6c9;
+}
+#plot-ghost.unsuitable img {
+  opacity: 0.72;
+}
+.plot-toolbar {
+  margin: 10px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.plot-toolbar .soft {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 8px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+#home-status {
+  color: #36593c;
+  font-size: 13px;
+}
+#home-status.unsuitable,
+.home-message {
+  color: #884630;
+}
+.home-message {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+@media (max-width: 520px) {
+  #home-editor {
+    max-height: 92dvh;
+  }
+  .housebook {
+    padding: 20px 16px 16px;
+  }
+  .housebook h2 {
+    margin-bottom: 12px;
+  }
+  .home-plate {
+    min-height: 148px;
+    grid-template-columns: 45% 1fr;
+  }
+  .house-portrait img {
+    height: 128px;
+  }
+  .home-description {
+    padding: 9px 10px 8px 4px;
+  }
+  .home-description p {
+    font-size: 12px;
+  }
+  .home-options {
+    gap: 4px;
+  }
+  .home-option img {
+    height: 39px;
+  }
+  .home-footer {
+    margin-top: 13px;
+  }
+  .interaction-bar {
+    flex-wrap: wrap;
+  }
+}

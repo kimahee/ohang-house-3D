@@ -151,6 +151,8 @@
     node.style.setProperty("--tint", m.color);
     node.style.setProperty("--wash", m.pale);
   }
+  const homeEditor = new G.HomeEditor(notice);
+  const atlas = new G.IslandAtlas(document.querySelector(".atlas"), choose);
   function buildAtlas() {
     for (const [id, m] of entries) {
       const pin = btn("", () => choose(id), "island-pin");
@@ -183,6 +185,7 @@
   }
   function choose(id, scroll = true) {
     selected = id;
+    atlas.select(id);
     const m = G.maps[id];
     $("intro").hidden = true;
     $("detail").hidden = false;
@@ -201,6 +204,7 @@
   }
   function intro() {
     selected = null;
+    atlas.select(null);
     $("detail").hidden = true;
     $("intro").hidden = false;
     document
@@ -274,7 +278,8 @@
     const d = dialog("섬 이용 안내", "guide");
     const list = el("ul", null, "guide-list");
     for (const line of [
-      "지도에서 섬을 누르면 풍경과 만남의 장소를 볼 수 있어요.",
+      "지도에서 섬을 누르거나 드래그하면 그 섬이 커져요. 섬 카드를 눌러도 선택할 수 있어요.",
+      "섬에 처음 들어가면 오행 집 다섯 채 중 하나를 고르고 지도를 눌러 집터를 정해요. 산책 중 내 집을 누르면 디자인과 위치를 바꿀 수 있어요.",
       "PC는 방향키·WASD, 휴대폰은 갈 곳을 터치해요. 산책 수첩에서 장소를 누르면 길을 찾아가요.",
       "말풍선은 보낸 순간 가까이 있던 주민에게 보여요. PC에서는 Enter로 대화 입력을 시작해요.",
       "인사에서 손을 흔들거나 박수를 쳐 보세요. 앉기를 누르면 빈자리를 찾아가요.",
@@ -314,6 +319,7 @@
   }
   function update(w, force = false) {
     if (world !== w) return;
+    homeEditor.refresh();
     const stamp = [
       w.actors.size,
       w.log.map((m) => m.seq).join(","),
@@ -352,6 +358,7 @@
     places($("places"), w);
     update(w, true);
     $("stage").focus({ preventScroll: true });
+    homeEditor.enter(w);
   }
   async function enter() {
     if (!selected || world) return;
@@ -398,6 +405,7 @@
   function leave(home = false) {
     const old = world;
     world = null;
+    homeEditor.leave();
     if (old) old.close();
     close();
     $("game").hidden = true;

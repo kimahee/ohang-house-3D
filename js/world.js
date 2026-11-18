@@ -25,6 +25,11 @@
       this.live = true;
       this.keys = new Set();
       this.actors = new Map();
+      this.homes = [];
+      this.homeNodes = new Map();
+      this.homeVersion = -1;
+      this.housingReady = false;
+      this.myHome = null;
       this.log = [];
       this.seenMessages = new Set();
       this.blocks = [];
@@ -49,6 +54,14 @@
     }
     params() {
       return { p_session: this.sid, p_room: this.room };
+    }
+    pose() {
+      return {
+        p_x: Math.floor(this.self.x),
+        p_y: Math.floor(this.self.y),
+        p_face: this.self.face,
+        p_seat: this.self.seat
+      };
     }
     async start() {
       const snap = await G.net.rpc("enter", {
@@ -127,6 +140,7 @@
         (e) => {
           if (
             $("modal").open ||
+            $("home-editor").open ||
             e.altKey ||
             e.ctrlKey ||
             e.metaKey ||
@@ -139,11 +153,7 @@
             this.cancelRoute();
             this.stand();
           }
-          if (
-            e.key === "Enter" &&
-            !e.repeat &&
-            (!e.target.closest("button") || e.target === this.stage)
-          ) {
+          if (e.key === "Enter" && !e.repeat && (!e.target.closest("button") || e.target === this.stage)) {
             e.preventDefault();
             $("chat").focus();
           }
@@ -219,7 +229,7 @@
       if (this.walkTo(s.point, s.id) && s.dist > 30) this.ui.notice("가까운 빈자리로 걸어갈게요.");
     }
     move(dt) {
-      if ($("modal").open) {
+      if ($("modal").open || $("home-editor").open) {
         this.keys.clear();
         return false;
       }
@@ -313,7 +323,54 @@
       a.info = info;
       return a;
     }
+    applyHomes(snap) {
+      if (!Array.isArray(snap.homes)) return;
+      this.housingReady = true;
+      if (snap.myHome && (!this.myHome || snap.myHome.rev >= this.myHome.rev)) this.myHome = snap.myHome;
+      if (snap.homeVersion <= this.homeVersion) return;
+      this.homeVersion = snap.homeVersion;
+      this.homes = snap.homes;
+      this.terrain.setHomes(this.homes);
+      // A house can appear while a resident is walking, or while a suspended tab wakes up.
+      if (!this.terrain.allows(this.self.x, this.self.y)) {
+        const safe = this.terrain.allows(snap.self.x, snap.self.y)
+          ? [snap.self.x, snap.self.y]
+          : this.map.spawn;
+        [this.self.x, this.self.y] = safe;
+        this.cancelRoute();
+      }
+      const seen = new Set();
+      for (const h of this.homes) {
+        seen.add(h.uid);
+        let node = this.homeNodes.get(h.uid);
+        if (!node) {
+          node = document.createElement("div");
+          node.className = "world-home" + (h.uid === this.self.uid ? " mine" : "");
+          node.dataset.owner = h.uid;
+          const img = new Image();
+          img.draggable = false;
+          node.append(img, document.createElement("small"));
+          this.actorLayer.append(node);
+          this.homeNodes.set(h.uid, node);
+        }
+        if (node.dataset.kind !== h.kind) {
+          node.dataset.kind = h.kind;
+          node.firstChild.src = G.homes.image(h.kind);
+        }
+        node.firstChild.alt = G.homes.designs[h.kind].name;
+        node.lastChild.textContent = h.uid === this.self.uid ? "내 집" : h.name + "의 집";
+        node.style.left = h.x + "px";
+        node.style.top = h.y + "px";
+        node.style.zIndex = String(h.y * 2);
+      }
+      for (const [uid, node] of this.homeNodes)
+        if (!seen.has(uid)) {
+          node.remove();
+          this.homeNodes.delete(uid);
+        }
+    }
     apply(snap) {
+      this.applyHomes(snap);
       this.blocks = snap.blocks || [];
       const hidden = new Set(this.blocks.map((b) => b.uid));
       const here = new Set([this.sid]);
@@ -346,8 +403,7 @@
       if (this.log.length > 50) this.log.shift();
       const a = this.actors.get(m.sid);
       if (a && m.age < 5.5) {
-        a.bubble.textContent =
-          m.kind === "wave" ? "👋 손 흔들기" : m.kind === "clap" ? "👏 짝짝!" : m.body;
+        a.bubble.textContent = m.kind === "wave" ? "👋 손 흔들기" : m.kind === "clap" ? "👏 짝짝!" : m.body;
         a.bubble.hidden = false;
         a.until = performance.now() + Math.max(100, (5.5 - m.age) * 1000);
         a.gesture = m.kind;
@@ -387,8 +443,7 @@
               : walking
                 ? "walk"
                 : "idle";
-        const phase =
-          !reduced.matches && ["walk", "wave", "clap"].includes(pose) ? Math.floor(t / 85) : 0;
+        const phase = !reduced.matches && ["walk", "wave", "clap"].includes(pose) ? Math.floor(t / 85) : 0;
         const key = [info.color, info.face, pose, phase].join("/");
         if (a.lastDraw !== key) {
           G.art.paintAvatar(a.c, info.color, info.face, pose, phase * 85);
@@ -426,12 +481,7 @@
       if (!this.live || this.inflight || !this.self) return;
       this.inflight = true;
       const seatVersion = this.seatRevision;
-      const pose = {
-        p_x: Math.floor(this.self.x),
-        p_y: Math.floor(this.self.y),
-        p_face: this.self.face,
-        p_seat: this.self.seat
-      };
+      const pose = this.pose();
       try {
         let snap;
         try {
@@ -490,13 +540,7 @@
       this.speechBusy = true;
       try {
         // Flush the latest location before the server determines who can hear this line.
-        await G.net.rpc("tick", {
-          ...this.params(),
-          p_x: Math.floor(this.self.x),
-          p_y: Math.floor(this.self.y),
-          p_face: this.self.face,
-          p_seat: this.self.seat
-        });
+        await G.net.rpc("tick", { ...this.params(), ...this.pose() });
         const m = await G.net.rpc("say", {
           ...this.params(),
           p_event: event.id,
@@ -554,7 +598,21 @@
       await bg.decode();
       ctx.drawImage(bg, 0, 0, 1000, 750);
       ctx.drawImage($("scenery"), 0, 0, 1000, 750);
-      for (const a of [...this.actors.values()].sort((a, b) => a.y - b.y)) {
+      const scene = [...this.homes, ...this.actors.values()].sort((a, b) => a.y - b.y);
+      for (const a of scene) {
+        if (a.kind) {
+          let sprite = this.homeNodes.get(a.uid)?.firstChild;
+          if (!sprite || (location.protocol === "file:" && !sprite.src.startsWith("data:"))) {
+            sprite = new Image();
+            sprite.src = G.homeThumbs[a.kind];
+          }
+          await sprite.decode();
+          const fit = Math.min(100 / sprite.naturalWidth, 91 / sprite.naturalHeight);
+          const width = sprite.naturalWidth * fit,
+            height = sprite.naturalHeight * fit;
+          ctx.drawImage(sprite, a.x - width / 2, a.y - height, width, height);
+          continue;
+        }
         ctx.drawImage(a.c, a.x - 18, a.y - 43, 36, 45);
         ctx.textAlign = "center";
         ctx.font = "bold 9px sans-serif";

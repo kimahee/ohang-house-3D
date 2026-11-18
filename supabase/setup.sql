@@ -17,6 +17,14 @@ on conflict(id) do update set terrain=excluded.terrain,spawn=excluded.spawn,seat
 create table if not exists ohaeng_game.visitors (
   uid uuid primary key, first_seen timestamptz not null default now(), last_seen timestamptz not null default now()
 );
+alter table ohaeng_game.rooms add column if not exists home_version bigint not null default 0;
+create table if not exists ohaeng_game.houses (
+  owner uuid primary key references ohaeng_game.visitors(uid),
+  room text not null references ohaeng_game.rooms(id),
+  kind text not null check (kind in ('wood','fire','earth','metal','water')),
+  x int not null, y int not null, name text not null, rev int not null default 1
+);
+create index if not exists ohaeng_houses_room on ohaeng_game.houses(room);
 create table if not exists ohaeng_game.players (
   sid uuid primary key, uid uuid not null, room text not null references ohaeng_game.rooms(id),
   name text not null, color int not null, x int not null, y int not null, face int not null default 1,
@@ -42,6 +50,7 @@ create table if not exists ohaeng_game.reports (
 -- No direct Data API access to game tables. RPCs use the authenticated subject.
 alter table ohaeng_game.rooms enable row level security;
 alter table ohaeng_game.visitors enable row level security;
+alter table ohaeng_game.houses enable row level security;
 alter table ohaeng_game.players enable row level security;
 alter table ohaeng_game.messages enable row level security;
 alter table ohaeng_game.blocks enable row level security;
@@ -66,10 +75,26 @@ returns jsonb language sql stable set search_path = '' as $fn$
     'at',floor(extract(epoch from m.sent)*1000),'age',greatest(0,extract(epoch from (now()-m.sent))));
 $fn$;
 
+create or replace function ohaeng_game.home_json(h ohaeng_game.houses)
+returns jsonb language sql immutable strict set search_path = '' as $fn$
+  select jsonb_build_object('uid',h.owner,'room',h.room,'kind',h.kind,'x',h.x,'y',h.y,'name',h.name,'rev',h.rev);
+$fn$;
+
+create or replace function ohaeng_game.can_stand(p_room text,px int,py int)
+returns boolean language sql stable set search_path = '' as $fn$
+  select ohaeng_game.walkable(p_room,px,py) and not exists (
+    select from ohaeng_game.houses h where h.room=p_room
+      and px/10 between h.x/10-3 and h.x/10+3 and py/10 between h.y/10-3 and h.y/10);
+$fn$;
+
 create or replace function ohaeng_game.snapshot(me ohaeng_game.players)
 returns jsonb language sql stable set search_path = '' as $fn$
   select jsonb_build_object(
     'self',ohaeng_game.player_json(me),
+    'homeVersion',(select r.home_version from ohaeng_game.rooms r where r.id=me.room),
+    'myHome',(select ohaeng_game.home_json(h) from ohaeng_game.houses h where h.owner=me.uid),
+    'homes',coalesce((select jsonb_agg(ohaeng_game.home_json(h) order by h.y,h.owner)
+      from ohaeng_game.houses h where h.room=me.room),'[]'::jsonb),
     'players',coalesce((select jsonb_agg(ohaeng_game.player_json(p) order by p.arrived,p.sid)
       from ohaeng_game.players p where p.room=me.room and p.sid<>me.sid
       and p.seen>now()-interval '35 seconds'), '[]'::jsonb),
@@ -119,9 +144,17 @@ begin
   select * into me from ohaeng_game.players where sid=p_session and uid=auth.uid() and room=p_room for update;
   if not found then raise exception 'ROOM_GONE'; end if;
   if p_seat=-1 or me.seen<=now()-interval '35 seconds' then me.seat:=-1; end if;
-  if me.seat=-1 and ohaeng_game.walkable(p_room,p_x,p_y) then me.x:=p_x; me.y:=p_y; end if;
+  -- Serialize a position change with a house placement or seat claim in the same room.
   if p_seat between 0 and 3 and p_seat<>me.seat then
-    select r.seats into seats from ohaeng_game.rooms r where id=p_room for update;
+    select r.seats into seats from ohaeng_game.rooms r where r.id=p_room for update;
+  else
+    perform 1 from ohaeng_game.rooms r where r.id=p_room for share;
+  end if;
+  if me.seat=-1 and ohaeng_game.can_stand(p_room,p_x,p_y) then me.x:=p_x; me.y:=p_y;
+  elsif not ohaeng_game.can_stand(p_room,me.x,me.y) then
+    select r.spawn[1],r.spawn[2] into me.x,me.y from ohaeng_game.rooms r where r.id=p_room;
+  end if;
+  if p_seat between 0 and 3 and p_seat<>me.seat then
     sx:=(seats->p_seat->>0)::int; sy:=(seats->p_seat->>1)::int;
     if abs(me.x-sx)<=42 and abs(me.y-sy)<=42 and not exists(
       select 1 from ohaeng_game.players p where p.room=p_room and p.seat=p_seat and p.sid<>me.sid
@@ -129,6 +162,46 @@ begin
   end if;
   update ohaeng_game.players set seen=now(),x=me.x,y=me.y,seat=me.seat,
     face=case when p_face=-1 then -1 else 1 end where sid=me.sid returning * into me;
+  return ohaeng_game.snapshot(me);
+end; $fn$;
+
+-- Store one home for each resident. An island transfer and its layout revisions commit together.
+create or replace function public.ohaeng_place_home(
+  p_session uuid, p_room text, p_kind text, p_x int, p_y int, p_expected int)
+returns jsonb language plpgsql security definer set search_path = '' as $fn$
+declare
+  me ohaeng_game.players; previous ohaeng_game.houses; r ohaeng_game.rooms;
+begin
+  select * into me from ohaeng_game.players
+    where sid=p_session and room=p_room and uid=auth.uid() and seen>now()-interval '35 seconds' for update;
+  if not found then raise exception 'ROOM_GONE'; end if;
+  perform 1 from ohaeng_game.visitors v where v.uid=me.uid for update;
+  select * into previous from ohaeng_game.houses where owner=me.uid;
+  if p_kind is null or p_kind not in ('wood','fire','earth','metal','water') or
+    p_x is null or p_y is null or p_x not between 35 and 965 or p_y not between 35 and 735
+    or p_x%10<>5 or p_y%10<>5 then raise exception 'HOME_GROUND'; end if;
+  if previous.room=p_room and previous.kind=p_kind and previous.x=p_x and previous.y=p_y then
+    return ohaeng_game.snapshot(me);
+  end if;
+  if p_expected is distinct from coalesce(previous.rev,0) then raise exception 'HOME_STALE'; end if;
+  perform 1 from ohaeng_game.rooms where id in (p_room,previous.room) order by id for update;
+  select * into strict r from ohaeng_game.rooms where id=p_room;
+  if exists(select from generate_series(-30,30,10) dx cross join generate_series(-30,10,10) dy
+    where not ohaeng_game.walkable(p_room,p_x+dx,p_y+dy)) then raise exception 'HOME_GROUND'; end if;
+  if (abs(r.spawn[1]-p_x)<78 and abs(r.spawn[2]-p_y)<56) or
+    (p_room='water' and abs(706-p_x)<115 and abs(365-p_y)<53) or
+    exists(select from jsonb_array_elements(r.seats) seat
+      where abs((seat->>0)::int-p_x)<60 and abs((seat->>1)::int-p_y)<56)
+    then raise exception 'HOME_PATH'; end if;
+  if exists(select from ohaeng_game.houses h where h.owner<>me.uid and h.room=p_room
+    and abs(h.x-p_x)<90 and abs(h.y-p_y)<60) then raise exception 'HOME_NEIGHBOR'; end if;
+  if exists(select from ohaeng_game.players p where p.room=p_room and p.seen>now()-interval '35 seconds'
+    and abs(p.x-p_x)<42 and p.y between p_y-40 and p_y+8) then raise exception 'HOME_RESIDENT'; end if;
+  insert into ohaeng_game.houses as h(owner,room,kind,x,y,name,rev)
+    values(me.uid,p_room,p_kind,p_x,p_y,me.name,coalesce(previous.rev,0)+1)
+    on conflict(owner) do update set room=excluded.room,kind=excluded.kind,x=excluded.x,
+      y=excluded.y,name=excluded.name,rev=excluded.rev;
+  update ohaeng_game.rooms set home_version=home_version+1 where id in (p_room,previous.room);
   return ohaeng_game.snapshot(me);
 end; $fn$;
 
@@ -191,11 +264,11 @@ $fn$;
 revoke all on all functions in schema ohaeng_game from public,anon,authenticated;
 revoke all on function public.ohaeng_counts(),public.ohaeng_enter(uuid,text,text,int),
   public.ohaeng_tick(uuid,text,int,int,int,int),public.ohaeng_say(uuid,text,uuid,text,text),
-  public.ohaeng_block(uuid,boolean),public.ohaeng_report(uuid,bigint,text),public.ohaeng_leave(uuid,text)
+  public.ohaeng_block(uuid,boolean),public.ohaeng_report(uuid,bigint,text),public.ohaeng_place_home(uuid,text,text,int,int,int),public.ohaeng_leave(uuid,text)
   from public,anon,authenticated;
 grant execute on function public.ohaeng_counts() to anon,authenticated;
 grant execute on function public.ohaeng_enter(uuid,text,text,int),public.ohaeng_tick(uuid,text,int,int,int,int),
   public.ohaeng_say(uuid,text,uuid,text,text),public.ohaeng_block(uuid,boolean),
-  public.ohaeng_report(uuid,bigint,text),public.ohaeng_leave(uuid,text) to authenticated;
+  public.ohaeng_report(uuid,bigint,text),public.ohaeng_place_home(uuid,text,text,int,int,int),public.ohaeng_leave(uuid,text) to authenticated;
 notify pgrst, 'reload schema';
 commit;
