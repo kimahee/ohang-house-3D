@@ -1,0 +1,16 @@
+{
+  "name": "ohaeng-islands",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "오행의 섬 — 다섯 섬에서 만나는 산책 게임",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.3.14"
+  }
+}

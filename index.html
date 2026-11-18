@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f8f6ef" />
+    <title>오행의 섬 · 다섯 섬에서 만나는 산책</title>
+    <meta
+      name="description"
+      content="다섯 빛깔의 수채화 섬을 자유롭게 산책하고, 곁에 있는 주민과 말풍선으로 대화해요."
+    />
+    <link rel="icon" href="./assets/compass.png" type="image/png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./config.js"></script>
+    <script defer src="./js/catalog.js"></script>
+    <script defer src="./js/postcards.js"></script>
+    <script defer src="./js/art.js"></script>
+    <script defer src="./js/navigation.js"></script>
+    <script defer src="./js/network.js"></script>
+    <script defer src="./js/world.js"></script>
+    <script defer src="./js/app.js"></script>
+  </head>
+  <body>
+    <header class="mast">
+      <div class="shell mast-inner">
+        <button class="wordmark" id="brand" aria-label="오행의 섬 첫 화면">
+          <img src="./assets/compass.png" alt="" width="34" height="34" /><span>오행의 섬</span>
+        </button>
+        <div class="mast-actions">
+          <button class="head-action" id="sound" aria-pressed="false">
+            <i data-icon="mute"></i><span>소리 끔</span>
+          </button>
+          <button class="head-action" id="guide"><i data-icon="book"></i><span>이용 안내</span></button>
+        </div>
+      </div>
+    </header>
+    <main class="shell" id="main">
+      <section id="lobby" aria-label="섬 선택">
+        <div class="lobby-grid">
+          <div class="intro" id="intro">
+            <div class="folio"><span class="folio-line"></span> OHAENG ISLANDS</div>
+            <h1>오늘은 어느 섬에<br /><em>머물고 싶나요?</em></h1>
+            <p class="lead">
+              다섯 빛깔의 섬을 천천히 거닐고,<br class="desktop-break" />
+              길에서 만난 주민에게 인사를 건네세요.
+            </p>
+            <button class="primary start" id="start">GAME START <i data-icon="arrow"></i></button>
+            <p class="connection">
+              <span class="dot"></span><span class="mode-label">연결 확인 중</span>
+            </p>
+          </div>
+          <div class="intro island-detail" id="detail" hidden>
+            <button class="text-back" id="back-intro"><i data-icon="back"></i> 첫 화면</button>
+            <div class="element-line">
+              <span class="seal" id="detail-seal"></span><span id="detail-mood"></span>
+            </div>
+            <h1 id="detail-name"></h1>
+            <p class="lead" id="detail-desc"></p>
+            <p class="detail-place">
+              <i data-icon="pin"></i> <span id="detail-place"></span><span class="vbar"></span
+              ><span id="detail-count"></span>
+            </p>
+            <button class="primary" id="enter">이 섬에 입장하기 <i data-icon="arrow"></i></button>
+            <p class="connection"><span class="dot"></span><span class="mode-label"></span></p>
+          </div>
+          <figure class="atlas" aria-label="오행 군도 전체 지도">
+            <img
+              class="atlas-image"
+              src="./assets/maps/atlas.webp"
+              width="1448"
+              height="1086"
+              alt="북쪽에 금, 왼쪽에 화, 가운데에 토, 오른쪽에 수, 남쪽에 목의 섬이 있는 수채화 지도"
+            />
+            <figcaption><i data-icon="map"></i> 오행 군도 전도</figcaption>
+            <div class="north" aria-hidden="true"><b>N</b><span></span></div>
+            <div id="map-pins"></div>
+            <div class="atlas-note">섬 이름을 눌러 둘러보기</div>
+          </figure>
+        </div>
+        <section class="islands-section" aria-labelledby="islands-title">
+          <div class="section-line">
+            <h2 id="islands-title">다섯 섬 둘러보기</h2>
+            <span class="rule"></span>
+          </div>
+          <div class="island-cards" id="island-cards"></div>
+        </section>
+      </section>
+
+      <section id="game" hidden aria-label="섬 산책">
+        <div class="game-heading">
+          <div class="world-heading">
+            <button class="text-back" id="to-atlas"><i data-icon="back"></i> 전체 지도</button>
+            <div class="world-title">
+              <span class="seal" id="world-seal"></span>
+              <h1 id="world-name"></h1>
+            </div>
+          </div>
+          <div class="world-tools">
+            <span class="connection game-mode"
+              ><span class="dot"></span><span class="mode-label"></span
+            ></span>
+            <button class="soft" id="people">
+              <i data-icon="people"></i><span id="people-label">주민 1명</span>
+            </button>
+          </div>
+        </div>
+        <div class="play-grid">
+          <div class="play-column">
+            <div
+              class="stage"
+              id="stage"
+              tabindex="0"
+              aria-label="섬 산책 지도. 방향키 또는 WASD로 걷고 땅을 누르면 그곳으로 이동합니다."
+            >
+              <div id="land">
+                <img id="terrain-image" alt="" draggable="false" /><canvas
+                  id="scenery"
+                  width="1500"
+                  height="1125"
+                ></canvas>
+                <div id="markers"></div>
+                <div id="actors"></div>
+                <div id="destination" hidden></div>
+              </div>
+              <div class="location-chip"><i data-icon="pin"></i><span id="location-label"></span></div>
+              <button class="camera" id="photo" aria-label="산책 사진 저장" title="산책 사진 저장">
+                <i data-icon="camera"></i>
+              </button>
+            </div>
+            <div class="interaction-bar">
+              <button class="action" id="greetings"><i data-icon="wave"></i> 인사</button>
+              <button class="action" id="seat"><i data-icon="seat"></i><span>앉기</span></button>
+              <button class="action" id="journal"><i data-icon="book"></i> 산책 수첩</button>
+              <span class="move-hint"><i data-icon="move"></i> <span id="move-hint"></span></span>
+            </div>
+            <form id="chat-form" class="composer" autocomplete="off">
+              <label class="sr-only" for="chat">주변 주민에게 보낼 말</label><i data-icon="chat"></i>
+              <input
+                id="chat"
+                maxlength="100"
+                enterkeyhint="send"
+                placeholder="가까이 있는 주민에게 말 걸기…"
+              />
+              <button type="submit" class="send" aria-label="말풍선 보내기" title="말풍선 보내기">
+                <i data-icon="send"></i>
+              </button>
+            </form>
+          </div>
+          <aside class="notebook" aria-label="섬 안내와 주변 대화">
+            <div class="section-line">
+              <h2>산책 수첩</h2>
+              <i data-icon="book"></i>
+            </div>
+            <img id="detail-thumb" alt="" class="notebook-map" />
+            <h3>이 섬의 장소</h3>
+            <div id="places"></div>
+            <div class="section-line chat-title">
+              <h3>주변 대화</h3>
+              <button class="link" id="all-chat">전체 보기</button>
+            </div>
+            <div id="recent-list" class="recent-list"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <dialog id="modal" aria-labelledby="modal-title">
+      <div class="modal-inner">
+        <button id="close-modal" class="dismiss" aria-label="닫기"><i data-icon="close"></i></button>
+        <div id="modal-body"></div>
+      </div>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <noscript>이 게임을 플레이하려면 브라우저의 JavaScript를 켜 주세요.</noscript>
+  </body>
+</html>
