@@ -14,13 +14,10 @@
     <script defer src="./config.js"></script>
     <script defer src="./js/catalog.js"></script>
     <script defer src="./js/postcards.js"></script>
-    <script defer src="./js/atlas.js"></script>
     <script defer src="./js/art.js"></script>
     <script defer src="./js/navigation.js"></script>
-    <script defer src="./js/homes.js"></script>
     <script defer src="./js/network.js"></script>
     <script defer src="./js/world.js"></script>
-    <script defer src="./js/home-editor.js"></script>
     <script defer src="./js/app.js"></script>
   </head>
   <body>
@@ -74,12 +71,10 @@
               height="1086"
               alt="북쪽에 금, 왼쪽에 화, 가운데에 토, 오른쪽에 수, 남쪽에 목의 섬이 있는 수채화 지도"
             />
-            <img class="atlas-sea" src="./assets/maps/atlas-sea.webp" alt="" draggable="false" />
-            <div class="atlas-pieces" aria-hidden="true"></div>
             <figcaption><i data-icon="map"></i> 오행 군도 전도</figcaption>
             <div class="north" aria-hidden="true"><b>N</b><span></span></div>
             <div id="map-pins"></div>
-            <div class="atlas-note">섬을 누르거나 드래그해 선택</div>
+            <div class="atlas-note">섬 이름을 눌러 둘러보기</div>
           </figure>
         </div>
         <section class="islands-section" aria-labelledby="islands-title">
@@ -133,7 +128,6 @@
               </button>
             </div>
             <div class="interaction-bar">
-              <button class="action home-action" id="my-house"><i data-icon="house"></i> 내 집</button>
               <button class="action" id="greetings"><i data-icon="wave"></i> 인사</button>
               <button class="action" id="seat"><i data-icon="seat"></i><span>앉기</span></button>
               <button class="action" id="journal"><i data-icon="book"></i> 산책 수첩</button>
@@ -173,58 +167,6 @@
       <div class="modal-inner">
         <button id="close-modal" class="dismiss" aria-label="닫기"><i data-icon="close"></i></button>
         <div id="modal-body"></div>
-      </div>
-    </dialog>
-    <dialog id="home-editor" aria-labelledby="home-title">
-      <div class="housebook">
-        <div class="home-kicker">
-          <i data-icon="house"></i><span id="home-island"></span><span class="home-divider">/</span> 내 집
-        </div>
-        <button type="button" class="dismiss" id="home-close" aria-label="집 배치 닫기">
-          <i data-icon="close"></i>
-        </button>
-        <h2 id="home-title" tabindex="-1">어떤 집에서 살까요?</h2>
-        <div id="home-design-step">
-          <div class="home-plate">
-            <div class="house-portrait"><img id="home-portrait" alt="" draggable="false" /></div>
-            <div class="home-description">
-              <span class="home-element" id="home-element"></span>
-              <h3 id="home-design-name"></h3>
-              <p id="home-design-note"></p>
-            </div>
-          </div>
-          <div class="home-options" id="home-options" role="group" aria-label="오행 집 디자인"></div>
-        </div>
-        <div id="home-site-step" hidden>
-          <p class="site-help" id="site-help">
-            원하는 땅을 누르거나 집을 끌어 놓으세요. 방향키로 한 칸씩 옮길 수도 있어요.
-          </p>
-          <div
-            class="placement-map"
-            id="placement-map"
-            tabindex="0"
-            role="group"
-            aria-label="집터 선택 지도"
-            aria-describedby="site-help home-status"
-          >
-            <img id="placement-terrain" alt="" draggable="false" /><canvas
-              id="placement-scenery"
-              width="1000"
-              height="750"
-            ></canvas>
-            <div id="placement-neighbors"></div>
-            <div id="plot-ghost"><span></span><img id="ghost-image" alt="" draggable="false" /></div>
-          </div>
-          <div class="plot-toolbar">
-            <span id="home-status" role="status" aria-live="polite"></span
-            ><button class="soft" type="button" id="suggest-home"><i data-icon="pin"></i>자리 추천</button>
-          </div>
-        </div>
-        <p id="home-message" class="home-message" role="status" hidden></p>
-        <div class="home-footer">
-          <button type="button" class="text-back" id="home-back">나중에 정하기</button
-          ><button type="button" id="home-next" class="primary"></button>
-        </div>
       </div>
     </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
